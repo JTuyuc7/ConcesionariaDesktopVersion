@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS `producto` (`codigoproducto` VARCHAR(30) NOT NULL , `nombreproducto` VARCHAR(100) NOT NULL , `cantidadproducto` INT NOT NULL , `preciounitario` FLOAT NOT NULL , `fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP , PRIMARY KEY (`codigoproducto`(30))) ENGINE = InnoDB COMMENT = 'Creacion de la tabla producto';
+
+-- Insertar dummy data
+INSERT INTO `producto` (`codigoproducto`, `nombreproducto`, `cantidadproducto`, `preciounitario`, `fecha`) VALUES ('aa111', 'Carro Tesla', '0', '250000', CURRENT_TIMESTAMP), ('aa124', 'Motoneta electrica', '0', '12500', CURRENT_TIMESTAMP), ('aa129', 'Motoneta electrica 2', '0', '13500', CURRENT_TIMESTAMP), ('aa125', 'Bicicleta sport',  '0', '18500', CURRENT_TIMESTAMP), ('aa126', 'Patineta', '0', '3500', CURRENT_TIMESTAMP);

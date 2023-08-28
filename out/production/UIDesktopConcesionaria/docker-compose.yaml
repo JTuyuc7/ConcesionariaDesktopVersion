@@ -1,0 +1,35 @@
+version: "3.6"
+
+services:
+  # Base de datos
+  mysql_umg_container_db:
+    image: mysql:8.1.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    container_name: mysql_umg_container_db
+    env_file:
+      - compose-variables.env
+    ports:
+      - 3357:3306
+    expose:
+      - 3357
+    volumes:
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - umg_volume_data:/var/lib/mysql
+
+  phpmyadmin_container:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    container_name: phpmyadmin_container
+    links:
+      - mysql_umg_container_db
+    env_file:
+      - compose-variables.env
+    ports:
+      - 8081:80
+    depends_on:
+      - mysql_umg_container_db
+
+volumes:
+  umg_volume_data:
+#    external: true
