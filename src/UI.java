@@ -850,8 +850,8 @@ public class UI extends javax.swing.JFrame {
             inventoryList[0] = codigo_producto;
             inventoryList[1] = nombre_producto;
             inventoryList[2] = cantidad_producto;
-            inventoryList[3] = precio;
-            inventoryList[4] = (cantidad_producto * precio);
+            inventoryList[3] = formatter.format(precio);
+            inventoryList[4] = formatter.format((cantidad_producto * precio));
             inventoryList[5] = date;
 
             model.addRow(inventoryList);
