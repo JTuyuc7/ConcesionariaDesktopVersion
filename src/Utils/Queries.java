@@ -22,23 +22,18 @@ public class Queries {
         return inventario;
     }
 
-    public String getSingleProductDb(String product_code, int user_id ) throws SQLException {
+    public ResultSet getSingleProductDb(String product_code, int user_id ) throws SQLException {
         String query = "SELECT * FROM producto WHERE `codigoproducto` = ?";
+        String queryWithUserSingleProduct = "SELECT * FROM `producto` WHERE producto.codigoproducto = ? AND producto.codigo_user_id = ?";
         ResultSet product = null;
-        String codigo_producto = "";
-//        product = db.singleProduct(query, product_code);
         try {
-            product = db.singleProduct(query, product_code, user_id);
+            product = db.singleProduct(queryWithUserSingleProduct, product_code, user_id);
         }catch (SQLException e){
             System.out.println("unable to get the product");
             e.printStackTrace();
         }
-        if(product != null){
-            while (product.next()){
-                codigo_producto = product.getString(1);
-            }
-        }
-        return codigo_producto;
+
+        return product;
     }
 
     public ResultSet getSingleProductFromDb(String product_code, int user_id ) throws SQLException {
@@ -56,14 +51,12 @@ public class Queries {
     }
 
     public int insertNewProductDb(String product_name, int product_qty, float product_price, int user_id) throws SQLException {
-        System.out.println(user_id+"    user id desdq queries");
         String queryAddProduct = "INSERT INTO `producto` (`codigoproducto`, `nombreproducto`, `cantidadproducto`, `preciounitario`) VALUES (?, ?, ?, ?)";
         String queryUpdateWithUser = "INSERT INTO `producto` (`nombreproducto`, `cantidadproducto`, `preciounitario`, `codigo_user_id`) VALUES (?, ?, ?, ?)";
         return db.insertRecord(queryUpdateWithUser, product_name, product_qty, product_price, user_id);
     }
 
     public int updateRecordOnDb(int amount_to_update, int user_id , String product_code) throws SQLException {
-        System.out.println("extrar e ingresa?"+ amount_to_update + user_id+ product_code );
         String queryUpdate = "UPDATE `producto` SET `cantidadproducto` = ? WHERE `producto`.`codigoproducto` = ?";
         String queryUpdateWithUser = "UPDATE `producto` SET `cantidadproducto` = ?, `codigo_user_id` = ? WHERE `producto`.`codigoproducto` = ?";
         return db.updateRecord(queryUpdateWithUser, amount_to_update, user_id, product_code);
