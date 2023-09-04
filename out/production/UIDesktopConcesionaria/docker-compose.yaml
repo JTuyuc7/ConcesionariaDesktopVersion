@@ -15,7 +15,7 @@ services:
       - 3357
     volumes:
       - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - umg_volume_data:/var/lib/mysql
+      - ui_umg_volume_data:/var/lib/mysql
 
   phpmyadmin_container:
     image: phpmyadmin/phpmyadmin
@@ -31,5 +31,5 @@ services:
       - mysql_umg_container_db
 
 volumes:
-  umg_volume_data:
+  ui_umg_volume_data:
 #    external: true

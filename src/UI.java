@@ -12,8 +12,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 
@@ -48,24 +46,43 @@ public class UI extends javax.swing.JFrame {
     //* Global variables
     float cantidad_total = 0;
     int unidadades_totales = 0;
-    String codigo_producto_to_update = "";
     int cantidad_producto_to_update = 0;
 
     String product_code_to_find = "";
 
     //? Producto a actualizar
     ResultSet product_found = null;
+    int user_loggedin_id = 0;
 
     String desktopPath = System.getProperty("user.home") + File.separator +"Desktop";
 
-    /**
-     * Creates new form UI
-     */
-    public UI() throws SQLException {
+    //! Datos de usuario
+    String full_user_name = "";
+    String product_code_to_update = "";
+    String isSuperAdmin = "";
+
+    public UI(int userId) throws SQLException {
         initComponents();
-        loadInitialData();
+        loadInitialData(userId);
+        getUserInfo(userId);
+        getImages();
         saveExtracInsertBtn.setVisible(false);
         cancelExtractInsertbtn.setVisible(false);
+    }
+
+    public void getUserInfo(int user_id_from_login) throws SQLException {
+        ResultSet user_loggedin_info = qr.userInformation(user_id_from_login);
+        if(user_loggedin_info != null){
+            while (user_loggedin_info.next()){
+                user_loggedin_id = user_loggedin_info.getInt(1);
+                full_user_name = user_loggedin_info.getString(2) + " " + user_loggedin_info.getString(3);
+                isSuperAdmin = user_loggedin_info.getString(5);
+            }
+        }
+        if(full_user_name.length() > 1){
+            user_info_loggedin.setText(full_user_name);
+        }
+
     }
 
     /**
@@ -80,10 +97,8 @@ public class UI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         quantityLabel = new javax.swing.JLabel();
         productQty = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
         productName = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        productCode = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         productPrice = new javax.swing.JTextField();
         saveExtracInsertBtn = new javax.swing.JButton();
@@ -91,30 +106,33 @@ public class UI extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         extractInventory = new javax.swing.JButton();
         insertInventory = new javax.swing.JButton();
-        newProductInventory = new javax.swing.JButton();
+        find_product = new javax.swing.JButton();
         deleteProduct = new javax.swing.JButton();
         generateReport = new javax.swing.JButton();
+        find_product1 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableContent = new javax.swing.JTable();
         jLabel6 = new javax.swing.JLabel();
         totalAmount = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        user_info_loggedin = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(151, 7, 240));
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", Font.BOLD, 24)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setIcon(new javax.swing.ImageIcon(logoImage)); // NOI18N
-        jLabel1.setText("DRIVE X PORT");
+        jLabel1.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\logo.png")); // NOI18N
+        jLabel1.setText("Drive X port");
         jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 14))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", Font.BOLD, 14))); // NOI18N
 
-        quantityLabel.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        quantityLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 18)); // NOI18N
         quantityLabel.setText("CANTIDAD PRODUCTO:");
 
-        productQty.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        productQty.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 14)); // NOI18N
         productQty.setText("0");
         productQty.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,25 +140,15 @@ public class UI extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        jLabel3.setText("CODIGO PRODUCTO:");
+        productName.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 14)); // NOI18N
 
-        productName.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-
-        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel4.setFont(new java.awt.Font("Tahoma", Font.BOLD, 18)); // NOI18N
         jLabel4.setText("NOMBRE PRODUCTO:");
 
-        productCode.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        productCode.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                productCodeActionPerformed(evt);
-            }
-        });
-
-        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel5.setFont(new java.awt.Font("Tahoma", Font.BOLD, 18)); // NOI18N
         jLabel5.setText("PRECIO PRODUCTO:");
 
-        productPrice.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        productPrice.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 14)); // NOI18N
         productPrice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 productPriceActionPerformed(evt);
@@ -177,64 +185,58 @@ public class UI extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(25, 25, 25)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(productPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(productName, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(quantityLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 63, Short.MAX_VALUE)
+                        .addComponent(productQty, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(192, 192, 192)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel3)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(productCode, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel4)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(productName, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(quantityLabel)
-                            .addGap(63, 63, 63)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(productQty, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(productPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(saveExtracInsertBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cancelExtractInsertbtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(153, 153, 153))
+                    .addComponent(saveExtracInsertBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cancelExtractInsertbtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(productCode, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(productName, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addGap(14, 14, 14)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(quantityLabel)
-                            .addComponent(productQty, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(11, 11, 11)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(productPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
                         .addComponent(saveExtracInsertBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(cancelExtractInsertbtn, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(cancelExtractInsertbtn, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addComponent(productName, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(quantityLabel))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(productQty, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(19, 19, 19)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(productPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Operaciones", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 14))); // NOI18N
 
         extractInventory.setBackground(new java.awt.Color(255, 165, 0));
         extractInventory.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        extractInventory.setIcon(new javax.swing.ImageIcon(extractImage)); // NOI18N
-        extractInventory.setText("EXTRAER INVENTARIO");
+        extractInventory.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\extraer.png")); // NOI18N
+        extractInventory.setText("EXTRAER");
         extractInventory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 try {
@@ -248,8 +250,8 @@ public class UI extends javax.swing.JFrame {
         insertInventory.setBackground(new java.awt.Color(0, 0, 255));
         insertInventory.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         insertInventory.setForeground(new java.awt.Color(204, 204, 204));
-        insertInventory.setIcon(new javax.swing.ImageIcon(insertImage)); // NOI18N
-        insertInventory.setText("iNGRESAR INVENTARIO");
+        insertInventory.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\ingreso1.png")); // NOI18N
+        insertInventory.setText("INGRESO");
         insertInventory.setPreferredSize(new java.awt.Dimension(240, 39));
         insertInventory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -261,14 +263,14 @@ public class UI extends javax.swing.JFrame {
             }
         });
 
-        newProductInventory.setBackground(new java.awt.Color(93, 190, 163));
-        newProductInventory.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        newProductInventory.setIcon(new javax.swing.ImageIcon(addImage)); // NOI18N
-        newProductInventory.setText("NUEVO PRODUCTO");
-        newProductInventory.addActionListener(new java.awt.event.ActionListener() {
+        find_product.setBackground(new java.awt.Color(93, 190, 163));
+        find_product.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        find_product.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\agregar.png")); // NOI18N
+        find_product.setText("NUEVO");
+        find_product.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 try {
-                    newProductInventoryActionPerformed(evt);
+                    find_productActionPerformed(evt);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -277,8 +279,8 @@ public class UI extends javax.swing.JFrame {
 
         deleteProduct.setBackground(new java.awt.Color(255, 0, 0));
         deleteProduct.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        deleteProduct.setIcon(new javax.swing.ImageIcon(deleteImage)); // NOI18N
-        deleteProduct.setText("ELIMINAR PRODUCTO");
+        deleteProduct.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\deleteIcon.png")); // NOI18N
+        deleteProduct.setText("ELIMINAR");
         deleteProduct.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 try {
@@ -291,11 +293,25 @@ public class UI extends javax.swing.JFrame {
 
         generateReport.setBackground(new java.awt.Color(255, 87, 51));
         generateReport.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        generateReport.setIcon(new javax.swing.ImageIcon(reportImage)); // NOI18N
-        generateReport.setText("GENEAR REPORTE");
+        generateReport.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\report.png")); // NOI18N
+        generateReport.setText("REPORTE");
         generateReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateReportActionPerformed(evt);
+            }
+        });
+
+        find_product1.setBackground(new java.awt.Color(93, 190, 163));
+        find_product1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        find_product1.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\salir.png")); // NOI18N
+        find_product1.setText("SALIR");
+        find_product1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    find_product1ActionPerformed(evt);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -305,19 +321,18 @@ public class UI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(29, 29, 29)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(generateReport, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                    .addComponent(extractInventory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(40, 40, 40)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(insertInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(deleteProduct, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 508, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(generateReport, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(extractInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(122, 122, 122)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(insertInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(newProductInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(62, 62, 62))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(deleteProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addComponent(find_product1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(find_product, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -326,11 +341,13 @@ public class UI extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(extractInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(insertInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(newProductInventory, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                    .addComponent(find_product, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(generateReport, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(deleteProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(deleteProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(find_product1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Inventario", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 14))); // NOI18N
@@ -386,33 +403,46 @@ public class UI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel2.setText("Bienvenido");
+
+        user_info_loggedin.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addGap(452, 452, 452)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 235, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(user_info_loggedin, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 235, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(34, 34, 34)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1, 1, 1)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(user_info_loggedin, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         pack();
@@ -422,15 +452,11 @@ public class UI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_productQtyActionPerformed
 
-    private void productCodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productCodeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_productCodeActionPerformed
-
     private void productPriceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productPriceActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_productPriceActionPerformed
 
-    private void extractInventoryActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_extractInventoryActionPerformed
+    private void extractInventoryActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {                                                 
         ResultSet tempProductFound = null;
         String tempProductCode = "";
         //* producto
@@ -444,12 +470,14 @@ public class UI extends javax.swing.JFrame {
         }
 
         if(!product_code_to_find.isEmpty()){
-            tempProductFound = qr.getSingleProductFromDb(product_code_to_find);
+            System.out.println(tempProductCode+ user_loggedin_id);
+            tempProductFound = qr.getSingleProductFromDb(product_code_to_find, user_loggedin_id);
         }
 
         if(tempProductFound != null){
             while (tempProductFound.next()){
                 tempProductCode = tempProductFound.getString(1);
+                product_code_to_update = tempProductFound.getString(1);
                 product_name = tempProductFound.getString(2);
                 cantidad_producto_to_update = Integer.parseInt(tempProductFound.getString(3));
                 unit_price = Float.parseFloat(tempProductFound.getString(4));
@@ -475,7 +503,7 @@ public class UI extends javax.swing.JFrame {
 
     //* Enable function
     private void enableElements(String codigo_producto_to_update, String product_name, Float unit_price){
-        productCode.setText(codigo_producto_to_update);
+//        productCode.setText(codigo_producto_to_update);
         productName.setText(product_name);
         productPrice.setText(String.valueOf(unit_price));
     }
@@ -485,13 +513,13 @@ public class UI extends javax.swing.JFrame {
         productQty.setEnabled(true);
         //* Leave read only values
         productName.setEnabled(false);
-        productCode.setEnabled(false);
+//        productCode.setEnabled(false);
         productPrice.setEnabled(false);
     }
 
     //? Disable menu buttons
     private void disableMenuButtons(String msg_toShow){
-        newProductInventory.setEnabled(false);
+        find_product.setEnabled(false);
         deleteProduct.setEnabled(false);
         extractInventory.setEnabled(false);
         insertInventory.setEnabled(false);
@@ -503,7 +531,7 @@ public class UI extends javax.swing.JFrame {
     //*Disable function
     private void disableElements(){
         productName.setEnabled(true);
-        productCode.setEnabled(true);
+//        productCode.setEnabled(true);
         productPrice.setEnabled(true);
         productQty.setEnabled(false);
 
@@ -515,7 +543,7 @@ public class UI extends javax.swing.JFrame {
 
     //? Enable buttons menu
     private void enableButtonsMenu(){
-        newProductInventory.setEnabled(true);
+        find_product.setEnabled(true);
         deleteProduct.setEnabled(true);
         extractInventory.setEnabled(true);
         insertInventory.setEnabled(true);
@@ -524,7 +552,7 @@ public class UI extends javax.swing.JFrame {
     }
     //? Enable text fields
     private void enableTextFields(){
-        productCode.setEnabled(true);
+//        productCode.setEnabled(true);
         productName.setEnabled(true);
         productPrice.setEnabled(true);
     }
@@ -539,17 +567,10 @@ public class UI extends javax.swing.JFrame {
         saveExtracInsertBtn.setVisible(true);
         cancelExtractInsertbtn.setVisible(true);
     }
-    private void newProductInventoryActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_newProductInventoryActionPerformed
-        String single_product_code;
-        String product_code = productCode.getText();
+    private void find_productActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_find_productActionPerformed
         String product_name = productName.getText();
         int product_qty = 0;
         String product_price = productPrice.getText();
-
-        if(validations.isValidField(product_code)){
-            JOptionPane.showMessageDialog(null, "El codigo no puede estar vacio");
-            return;
-        }
 
         if(validations.isValidField(product_name)){
             JOptionPane.showMessageDialog(null, "El nombre no puede estar vacio");
@@ -566,22 +587,16 @@ public class UI extends javax.swing.JFrame {
             return;
         }
 
-        //* Validar si ya existe el producto
-        single_product_code = qr.getSingleProductDb(product_code);
-        if(Objects.equals(single_product_code, product_code)){
-            JOptionPane.showMessageDialog(null, "El codigo ya existe, ingresa uno nuevo");
-        }
-
-        int saved = qr.insertNewProductDb(product_code, product_name, product_qty, Float.parseFloat(product_price));
+        int saved = qr.insertNewProductDb(product_name, product_qty, Float.parseFloat(product_price), user_loggedin_id);
 
         if(saved == 1){
             JOptionPane.showMessageDialog(null, "Producto guardado correctamente ");
             //! Resetear la tabla para tener los datos mas recientes
             model.getDataVector().removeAllElements();
             cantidad_total = 0;
-            loadInitialData();
+            loadInitialData(user_loggedin_id);
             //* Resetear todos los valores
-            productCode.setText("");
+//            productCode.setText("");
             productName.setText("");
             productPrice.setText("");
         }else {
@@ -589,12 +604,12 @@ public class UI extends javax.swing.JFrame {
 
         }
 
-    }//GEN-LAST:event_newProductInventoryActionPerformed
+    }//GEN-LAST:event_find_productActionPerformed
 
     private void cancelExtractInsertbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelExtractInsertbtnActionPerformed
         product_found = null;
         product_code_to_find = "";
-        productCode.setText("");
+//        productCode.setText("");
         productName.setText("");
         productPrice.setText("");
         productQty.setText("0");
@@ -602,7 +617,7 @@ public class UI extends javax.swing.JFrame {
         productQty.setEnabled(false);
         //* Leave read only values
         productName.setEnabled(true);
-        productCode.setEnabled(true);
+//        productCode.setEnabled(true);
         productPrice.setEnabled(true);
 
         //* Enable the buttons if there is a product to extract
@@ -610,7 +625,7 @@ public class UI extends javax.swing.JFrame {
         cancelExtractInsertbtn.setVisible(false);
 
         //* Disable all other buttons
-        newProductInventory.setEnabled(true);
+        find_product.setEnabled(true);
         deleteProduct.setEnabled(true);
         extractInventory.setEnabled(true);
         insertInventory.setEnabled(true);
@@ -621,7 +636,7 @@ public class UI extends javax.swing.JFrame {
     }//GEN-LAST:event_cancelExtractInsertbtnActionPerformed
 
     private void saveExtracInsertBtnActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_saveExtracInsertBtnActionPerformed
-        String localCodeToUpdate = productCode.getText();
+//        String localCodeToUpdate = productCode.getText();
         String btn_button_text = evt.getActionCommand();
         String new_amount_to_update = productQty.getText();
         int amount = 0;
@@ -648,7 +663,8 @@ public class UI extends javax.swing.JFrame {
             amount = cantidad_producto_to_update - Integer.parseInt(new_amount_to_update);
         }
 
-        int updated = qr.updateRecordOnDb(localCodeToUpdate, amount);
+        int updated = qr.updateRecordOnDb(amount, user_loggedin_id, product_code_to_update);
+//        int updated = 10;
         if(updated == 1){
             if(btn_button_text.equals("Insertar")){
                 cantidad_total = 0;
@@ -663,7 +679,7 @@ public class UI extends javax.swing.JFrame {
             //* Hide the buttons
             hideButtonsEdit();
             //* Reset the values
-            productCode.setText("");
+//            productCode.setText("");
             productName.setText("");
             productQty.setText("0");
             productQty.setEnabled(false);
@@ -675,7 +691,7 @@ public class UI extends javax.swing.JFrame {
 
             //? Clear the table
             model.getDataVector().removeAllElements();
-            loadInitialData();
+            loadInitialData(user_loggedin_id);
         }else {
             JOptionPane.showMessageDialog(null, "Oops, algo no salio como lo esperabamos");
         }
@@ -695,12 +711,13 @@ public class UI extends javax.swing.JFrame {
         }
 
         if(!product_code_to_find.isEmpty()){
-            tempProductFound = qr.getSingleProductFromDb(product_code_to_find);
+            tempProductFound = qr.getSingleProductFromDb(product_code_to_find, user_loggedin_id);
         }
 
         if(tempProductFound != null){
             while (tempProductFound.next()){
                 tempProductCode = tempProductFound.getString(1);
+                product_code_to_update = tempProductFound.getString(1);
                 product_name = tempProductFound.getString(2);
                 cantidad_producto_to_update = Integer.parseInt(tempProductFound.getString(3));
                 unit_price = Float.parseFloat(tempProductFound.getString(4));
@@ -727,33 +744,38 @@ public class UI extends javax.swing.JFrame {
 
     private void deleteProductActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_deleteProductActionPerformed
         String product_code_to_find = JOptionPane.showInputDialog("Ingrese el codigo del producto a eliminar.");
+        ResultSet product_found = null;
+        String local_code_to_delete = "";
         if(product_code_to_find == null) return;
-        ResultSet product_found = qr.getSingleProductFromDb(product_code_to_find);
+        try {
+            product_found = qr.getSingleProductFromDb(product_code_to_find, user_loggedin_id);
+        }catch (SQLException e){
+            System.out.println(e+"Al eliminar");
+        }
+
 
         //* producto
         String product_name = "";
         if(product_found != null ){
             while (product_found.next()){
-                codigo_producto_to_update = product_found.getString(1);
+                local_code_to_delete = product_found.getString(1);
                 product_name = product_found.getString(2);
                 cantidad_producto_to_update = Integer.parseInt(product_found.getString(3));
             }
-            int decision = JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar: "+product_name+"\nCon codigo "+codigo_producto_to_update+" ?\n"+"Una vez eliminado, no se podra recuperar", "Selecciona una Opcion", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+        }
+        if(local_code_to_delete.isEmpty()){
+            JOptionPane.showMessageDialog(null, "Codigo invalido, o producto no encontrado ");
+        }else {
+            int decision = JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar: "+product_name+"\nCon codigo "+local_code_to_delete+" ?\n"+"Una vez eliminado, no se podra recuperar", "Selecciona una Opcion", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
             if(decision == 0){
-                int result = qr.deleteRecordFromDb(codigo_producto_to_update);
+                int result = qr.deleteRecordFromDb(local_code_to_delete, user_loggedin_id);
                 if(result == 1){
                     cantidad_total = 0;
                     model.getDataVector().removeAllElements();
-                    loadInitialData();
+                    loadInitialData(user_loggedin_id);
                     JOptionPane.showMessageDialog(null, "Producto eliminado correctamente");
                 }
             }
-
-        }
-
-        if(codigo_producto_to_update.isEmpty()){
-
-            JOptionPane.showMessageDialog(null, "Codigo invalido, o producto no encontrado ");
         }
     }//GEN-LAST:event_deleteProductActionPerformed
 
@@ -767,9 +789,10 @@ public class UI extends javax.swing.JFrame {
         try {
             Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(filePathToSave));
-            ResultSet inventory = qr.getAllDataFromDb();
+//            ResultSet inventory = qr.getAllDataFromDb(user_loggedin_id);
+            ResultSet inventory = qr.getAllDataFromDb(user_loggedin_id);
             document.open();
-            pdfReport.addTitlePage(document);
+            pdfReport.addTitlePage(document, full_user_name, Integer.parseInt(isSuperAdmin));
 
             pdfReport.createContentTable(document, inventory);
             // agregar datos de tabla
@@ -781,9 +804,16 @@ public class UI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_generateReportActionPerformed
 
+    private void find_product1ActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_find_product1ActionPerformed
+        // TODO add your handling code here:
+        Login login = new Login();
+        login.show();
+        dispose();
+    }//GEN-LAST:event_find_product1ActionPerformed
+
     static BufferedImage addImage = null, deleteImage = null, extractImage = null, insertImage = null, reportImage = null, logoImage = null ;
 
-    public static void getImages(){
+    public void getImages(){
         try {
             addImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/agregar.png")));
             deleteImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/deleteIcon.png")));
@@ -799,14 +829,14 @@ public class UI extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws SQLException {
+    public void main(String[] args) throws SQLException {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
 
-        getImages();
+
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -818,13 +848,11 @@ public class UI extends javax.swing.JFrame {
                  UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(UI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new UI().setVisible(true);
+                    new UI(user_loggedin_id).setVisible(true);
 //                    productQty.isEditable();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -833,9 +861,9 @@ public class UI extends javax.swing.JFrame {
         });
     }
 
-    public void loadInitialData() throws SQLException {
+    public void loadInitialData(int userId ) throws SQLException {
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        ResultSet inventory = qr.getAllDataFromDb();
+        ResultSet inventory = qr.getAllDataFromDb(userId);
         Object[] inventoryList = new Object[6];
         model = (DefaultTableModel) tableContent.getModel();
         productQty.setEnabled(false);
@@ -864,10 +892,12 @@ public class UI extends javax.swing.JFrame {
     private javax.swing.JButton cancelExtractInsertbtn;
     private javax.swing.JButton deleteProduct;
     private javax.swing.JButton extractInventory;
+    private javax.swing.JButton find_product;
+    private javax.swing.JButton find_product1;
     private javax.swing.JButton generateReport;
     private javax.swing.JButton insertInventory;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -875,8 +905,6 @@ public class UI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton newProductInventory;
-    private javax.swing.JTextField productCode;
     private javax.swing.JTextField productName;
     private javax.swing.JTextField productPrice;
     private javax.swing.JTextField productQty;
@@ -884,5 +912,6 @@ public class UI extends javax.swing.JFrame {
     private javax.swing.JButton saveExtracInsertBtn;
     private javax.swing.JTable tableContent;
     private javax.swing.JLabel totalAmount;
+    private javax.swing.JLabel user_info_loggedin;
     // End of variables declaration//GEN-END:variables
 }
