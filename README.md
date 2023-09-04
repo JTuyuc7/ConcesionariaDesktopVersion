@@ -44,6 +44,17 @@ The file contains the logic to run two containers, ```MySql``` using the version
 ## UI
 The main file on the app, where all the logic, of the UI components live, buttons, labels, text field, icons, and the list of the components
 
+## Login
+The file contains the logic to validate email, password of the user before given access to it.
+
+## Register
+the file contains the logic and UI styles to create a new accunt, having some validations.
+* Email to be a valid one
+* Validate the email is not beeing used before
+* Password length of a minimun of 6 characters
+
+## New seed created.
+ When running the ```docker-compose up -d``` file at the first time this will create a new volume and it will iseert 2 users. one which is the super adming and a regular one, by default all the other users wil have a basic role.
 
 ## Want to run the project?
 
@@ -71,12 +82,19 @@ once you have configured all your variables, you have to run ```docker-compose u
 
 if all set up, you should be able to execute the UI file, and get running the project
 
+
+##UI Login
+![Login](https://github.com/JTuyuc7/ConcesionariaDesktopVersion/assets/50525507/5dd03799-bec3-4195-8e95-8996aec1fdde)
+
+## Create Account
+![RegisterAccount](https://github.com/JTuyuc7/ConcesionariaDesktopVersion/assets/50525507/5e42f35e-43c8-4a45-80a4-9012e2fe4a4f)
+
+
 ## Images
 ![ProyectoFinal](https://github.com/JTuyuc7/ConcesionariaDesktopVersion/assets/50525507/5a7816d3-4e10-4bbc-ad38-bf888aac2d2e)
 
 
 ![ProductoAgregado](https://github.com/JTuyuc7/ConcesionariaDesktopVersion/assets/50525507/f0789fc7-5769-4eac-8ae7-026938d303fb)
-
 
 
 ![EditAndUpdate](https://github.com/JTuyuc7/ConcesionariaDesktopVersion/assets/50525507/b8e4b832-642d-48c1-a9c7-41618a607968)
