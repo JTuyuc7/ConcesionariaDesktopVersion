@@ -18,7 +18,7 @@
 Inside the assest file, you can find all the icons used in the app
 
 ### Data
-Inside the data file, we sotored the init.sql, which gets executed when the compose file gets mounted, it runs a migration scritp which will create the table and insert some records on the DB
+Inside the data file, we sotored the init2.sql, which gets executed when the compose file gets mounted, it runs a migration scritp which will create the table and insert some records on the DB
 
 ### DBConnection
 In the file we can find all the functions that gets connected to the DB and executes the functions
