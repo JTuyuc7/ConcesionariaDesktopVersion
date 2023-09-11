@@ -4,27 +4,22 @@
  * and open the template in the editor.
  */
 
-import Utils.PdfReport;
-import Utils.Queries;
-import Utils.Validations;
+import Utils.*;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.Random;
 
 /**
  *
@@ -42,6 +37,9 @@ public class UI extends javax.swing.JFrame {
 
     //* PDF report
     PdfReport pdfReport = new PdfReport();
+
+    //* Name to save files
+    GenerateNamePath generateNamePath = new GenerateNamePath();
 
     //* Global variables
     float cantidad_total = 0;
@@ -61,6 +59,8 @@ public class UI extends javax.swing.JFrame {
     String product_code_to_update = "";
     String isSuperAdmin = "";
 
+    String id_product_to_generate_invoice = "";
+
     public UI(int userId) throws SQLException {
         initComponents();
         loadInitialData(userId);
@@ -69,6 +69,7 @@ public class UI extends javax.swing.JFrame {
         saveExtracInsertBtn.setVisible(false);
         cancelExtractInsertbtn.setVisible(false);
     }
+
 
     public void getUserInfo(int user_id_from_login) throws SQLException {
         ResultSet user_loggedin_info = qr.userInformation(user_id_from_login);
@@ -242,7 +243,7 @@ public class UI extends javax.swing.JFrame {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 try {
                     extractInventoryActionPerformed(evt);
-                } catch (SQLException e) {
+                } catch (SQLException | FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -280,7 +281,6 @@ public class UI extends javax.swing.JFrame {
 
         deleteProduct.setBackground(new java.awt.Color(255, 0, 0));
         deleteProduct.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        deleteProduct.setForeground(new java.awt.Color(204, 204, 204));
         deleteProduct.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\deleteIcon.png")); // NOI18N
         deleteProduct.setText("ELIMINAR");
         deleteProduct.addActionListener(new java.awt.event.ActionListener() {
@@ -303,7 +303,7 @@ public class UI extends javax.swing.JFrame {
             }
         });
 
-        find_product1.setBackground(new java.awt.Color(79, 135, 169));
+        find_product1.setBackground(new java.awt.Color(93, 190, 163));
         find_product1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         find_product1.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\salir.png")); // NOI18N
         find_product1.setText("SALIR");
@@ -389,7 +389,7 @@ public class UI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        tableContent.setGridColor(new java.awt.Color(208, 126, 126));
+        tableContent.setGridColor(new java.awt.Color(153, 153, 153));
         tableContent.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tableContent);
 
@@ -476,7 +476,7 @@ public class UI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_productPriceActionPerformed
 
-    private void extractInventoryActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {                                                 
+    private void extractInventoryActionPerformed(java.awt.event.ActionEvent evt) throws SQLException, FileNotFoundException {
         ResultSet tempProductFound = null;
         String tempProductCode = "";
         //* producto
@@ -490,13 +490,14 @@ public class UI extends javax.swing.JFrame {
         }
 
         if(!product_code_to_find.isEmpty()){
-            System.out.println(tempProductCode+ user_loggedin_id);
+//            System.out.println(tempProductCode+ user_loggedin_id);
             tempProductFound = qr.getSingleProductFromDb(product_code_to_find, user_loggedin_id);
         }
 
         if(tempProductFound != null){
             while (tempProductFound.next()){
                 tempProductCode = tempProductFound.getString(1);
+                id_product_to_generate_invoice = tempProductFound.getString(1);
                 product_code_to_update = tempProductFound.getString(1);
                 product_name = tempProductFound.getString(2);
                 cantidad_producto_to_update = Integer.parseInt(tempProductFound.getString(3));
@@ -507,7 +508,7 @@ public class UI extends javax.swing.JFrame {
         if(tempProductCode.isEmpty()){
             JOptionPane.showMessageDialog(null, "Producto no encontrado o codigo invalido");
         }else {
-            saveExtracInsertBtn.setText("Extraer");
+            saveExtracInsertBtn.setText("Continuar");
                 enableElements(tempProductCode, product_name, unit_price);
                 //? Set the text to the original data
                 setTextFieldProductQty("");
@@ -629,7 +630,6 @@ public class UI extends javax.swing.JFrame {
     private void cancelExtractInsertbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelExtractInsertbtnActionPerformed
         product_found = null;
         product_code_to_find = "";
-//        productCode.setText("");
         productName.setText("");
         productPrice.setText("");
         productQty.setText("0");
@@ -637,7 +637,6 @@ public class UI extends javax.swing.JFrame {
         productQty.setEnabled(false);
         //* Leave read only values
         productName.setEnabled(true);
-//        productCode.setEnabled(true);
         productPrice.setEnabled(true);
 
         //* Enable the buttons if there is a product to extract
@@ -656,7 +655,7 @@ public class UI extends javax.swing.JFrame {
     }//GEN-LAST:event_cancelExtractInsertbtnActionPerformed
 
     private void saveExtracInsertBtnActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_saveExtracInsertBtnActionPerformed
-//        String localCodeToUpdate = productCode.getText();
+        int updated = 3;
         String btn_button_text = evt.getActionCommand();
         String new_amount_to_update = productQty.getText();
         int amount = 0;
@@ -667,7 +666,6 @@ public class UI extends javax.swing.JFrame {
         }
 
         if(btn_button_text.equals("Insertar")){
-            // Agregar cantidad
             if( Integer.parseInt(new_amount_to_update) <= 0){
                 JOptionPane.showMessageDialog(null, "La cantidad debe ser positiva");
                 return;
@@ -675,25 +673,50 @@ public class UI extends javax.swing.JFrame {
             amount = cantidad_producto_to_update + Integer.parseInt(new_amount_to_update);
         }
 
-        if( btn_button_text.equals("Extraer")){
+        if( btn_button_text.equals("Continuar")){
             if( Integer.parseInt(new_amount_to_update) > cantidad_producto_to_update){
                 JOptionPane.showMessageDialog(null, "Cantidad insuficiente en el inventario");
-                return;
+            }else {
+                amount = cantidad_producto_to_update - Integer.parseInt(new_amount_to_update);
+                InvoiceForm invoiceForm = new InvoiceForm(id_product_to_generate_invoice, user_loggedin_id, amount);
+                invoiceForm.setVisible(true);
+
+                invoiceForm.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                        // https://www.youtube.com/playlist?list=PLz3sH_KSH-y_hyudbNhHk3Egdsn9Zj5SJ
+                        //* Hide the buttons
+                        hideButtonsEdit();
+                        //* Reset the values
+                        productName.setText("");
+                        productQty.setText("0");
+                        productQty.setEnabled(false);
+                        productPrice.setText("");
+                        //? habilitar los campos
+                        enableTextFields();
+                        //? habilitar los botones
+                        enableButtonsMenu();
+
+                        //? Clear the table
+                        model.getDataVector().removeAllElements();
+                        try {
+                            loadInitialData(user_loggedin_id);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
             }
-            amount = cantidad_producto_to_update - Integer.parseInt(new_amount_to_update);
         }
 
-        int updated = qr.updateRecordOnDb(amount, user_loggedin_id, product_code_to_update);
+        if(btn_button_text.equals("Insertar")){
+            updated = qr.updateRecordOnDb(amount, user_loggedin_id, product_code_to_update);
+        }
 //        int updated = 10;
         if(updated == 1){
             if(btn_button_text.equals("Insertar")){
                 cantidad_total = 0;
                 JOptionPane.showMessageDialog(null, "Producto Actaulizado correctamente");
-            }
-
-            if(btn_button_text.equals("Extraer")){
-                cantidad_total = 0;
-                JOptionPane.showMessageDialog(null, "Producto extraido correctamente");
             }
 
             //* Hide the buttons
@@ -712,7 +735,7 @@ public class UI extends javax.swing.JFrame {
             //? Clear the table
             model.getDataVector().removeAllElements();
             loadInitialData(user_loggedin_id);
-        }else {
+        }else if(updated == 0 ) {
             JOptionPane.showMessageDialog(null, "Oops, algo no salio como lo esperabamos");
         }
     }//GEN-LAST:event_saveExtracInsertBtnActionPerformed
@@ -773,7 +796,6 @@ public class UI extends javax.swing.JFrame {
             System.out.println(e+"Al eliminar");
         }
 
-
         //* producto
         String product_name = "";
         if(product_found != null ){
@@ -800,12 +822,7 @@ public class UI extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteProductActionPerformed
 
     private void generateReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateReportActionPerformed
-        Random random = new Random();
-        LocalDateTime myDateObj = LocalDateTime.now();
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String formattedDate = myDateObj.format(myFormatObj);
-        String uniqueId = String.format("%04d", random.nextInt(1000));
-        String filePathToSave = desktopPath + "/" + "Inventario"+"-"+formattedDate.replace("/","-") + "-" + uniqueId+ ".pdf";
+        String filePathToSave = generateNamePath.generatePathToSaveInfo("Inventario", desktopPath);
         try {
             Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(filePathToSave));
@@ -825,14 +842,13 @@ public class UI extends javax.swing.JFrame {
     }//GEN-LAST:event_generateReportActionPerformed
 
     private void find_product1ActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_find_product1ActionPerformed
-        // TODO add your handling code here:
         Login login = new Login();
         login.show();
         dispose();
     }//GEN-LAST:event_find_product1ActionPerformed
 
     private void search_productActionPerformed(java.awt.event.ActionEvent evt) throws SQLException {//GEN-FIRST:event_search_productActionPerformed
-        // TODO add your handling code here:
+
         ResultSet producto = null;
         String codigo_proudcto = "", nombre_producto = "", cantidad_producto = "", precio_producto = "";
         String codigo = JOptionPane.showInputDialog("Ingresa el codigo del producto a buscar");
@@ -889,8 +905,6 @@ public class UI extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-
-
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -907,7 +921,6 @@ public class UI extends javax.swing.JFrame {
             public void run() {
                 try {
                     new UI(user_loggedin_id).setVisible(true);
-//                    productQty.isEditable();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
