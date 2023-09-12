@@ -7,10 +7,10 @@ public class DBConnection {
     public Connection getConnection() {
         Connection dbConnection = null;
         try {
-            String url = "url";
+            String url = "jdbc:mysql://localhost:3357/db_drivexport";
             Properties info = new Properties();
-            info.put("user", "user");
-            info.put("password", "pass");
+            info.put("user", "root");
+            info.put("password", "mypass123");
             dbConnection = DriverManager.getConnection(url, info);
 
         }catch (SQLException e){
