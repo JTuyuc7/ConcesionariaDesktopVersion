@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -61,11 +62,12 @@ public class UI extends javax.swing.JFrame {
 
     String id_product_to_generate_invoice = "";
 
+
     public UI(int userId) throws SQLException {
         initComponents();
         loadInitialData(userId);
         getUserInfo(userId);
-        getImages();
+//        getImages();
         saveExtracInsertBtn.setVisible(false);
         cancelExtractInsertbtn.setVisible(false);
     }
@@ -120,12 +122,30 @@ public class UI extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         user_info_loggedin = new javax.swing.JLabel();
 
+
+        URL logo_image_url = getClass().getResource("./assets/logo.png");
+        URL add_image_url = getClass().getResource("./assets/agregar.png");
+        URL delete_image_url = getClass().getResource("./assets/deleteIcon.png");
+        URL report_image_url = getClass().getResource("./assets/report.png");
+        URL insert_image_url = getClass().getResource("./assets/ingreso1.png");
+        URL extract_image_url = getClass().getResource("./assets/extraer.png");
+        URL search_image_url = getClass().getResource("./assets/buscar.png");
+        URL logout_image_url = getClass().getResource("./assets/salir.png");
+
+        assert logo_image_url != null;
+        assert extract_image_url != null;
+        assert add_image_url != null;
+        assert insert_image_url != null;
+        assert delete_image_url != null;
+        assert report_image_url != null;
+        assert logout_image_url != null;
+        assert search_image_url != null;
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(151, 7, 240));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\logo.png")); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(logo_image_url)); // NOI18N
         jLabel1.setText("Drive X port");
         jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
@@ -237,7 +257,7 @@ public class UI extends javax.swing.JFrame {
 
         extractInventory.setBackground(new java.awt.Color(255, 165, 0));
         extractInventory.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        extractInventory.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\extraer.png")); // NOI18N
+        extractInventory.setIcon(new javax.swing.ImageIcon(extract_image_url)); // NOI18N
         extractInventory.setText("EXTRAER");
         extractInventory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -252,7 +272,7 @@ public class UI extends javax.swing.JFrame {
         insertInventory.setBackground(new java.awt.Color(0, 0, 255));
         insertInventory.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         insertInventory.setForeground(new java.awt.Color(204, 204, 204));
-        insertInventory.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\ingreso1.png")); // NOI18N
+        insertInventory.setIcon(new javax.swing.ImageIcon(insert_image_url)); // NOI18N
         insertInventory.setText("INGRESO");
         insertInventory.setPreferredSize(new java.awt.Dimension(240, 39));
         insertInventory.addActionListener(new java.awt.event.ActionListener() {
@@ -267,7 +287,7 @@ public class UI extends javax.swing.JFrame {
 
         find_product.setBackground(new java.awt.Color(93, 190, 163));
         find_product.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        find_product.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\agregar.png")); // NOI18N
+        find_product.setIcon(new javax.swing.ImageIcon(add_image_url)); // NOI18N
         find_product.setText("NUEVO");
         find_product.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -281,7 +301,7 @@ public class UI extends javax.swing.JFrame {
 
         deleteProduct.setBackground(new java.awt.Color(255, 0, 0));
         deleteProduct.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        deleteProduct.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\deleteIcon.png")); // NOI18N
+        deleteProduct.setIcon(new javax.swing.ImageIcon(delete_image_url)); // NOI18N
         deleteProduct.setText("ELIMINAR");
         deleteProduct.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -295,7 +315,7 @@ public class UI extends javax.swing.JFrame {
 
         generateReport.setBackground(new java.awt.Color(255, 87, 51));
         generateReport.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        generateReport.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\report.png")); // NOI18N
+        generateReport.setIcon(new javax.swing.ImageIcon(report_image_url)); // NOI18N
         generateReport.setText("REPORTE");
         generateReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -305,7 +325,7 @@ public class UI extends javax.swing.JFrame {
 
         find_product1.setBackground(new java.awt.Color(93, 190, 163));
         find_product1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        find_product1.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\salir.png")); // NOI18N
+        find_product1.setIcon(new javax.swing.ImageIcon(logout_image_url)); // NOI18N
         find_product1.setText("SALIR");
         find_product1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -319,7 +339,7 @@ public class UI extends javax.swing.JFrame {
 
         search_product.setBackground(new java.awt.Color(153, 255, 153));
         search_product.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        search_product.setIcon(new javax.swing.ImageIcon("C:\\Users\\DELL\\Desktop\\Git Repos\\UIDesktopConcesionaria\\src\\assets\\buscar.png")); // NOI18N
+        search_product.setIcon(new javax.swing.ImageIcon(search_image_url)); // NOI18N
         search_product.setText("BUSCAR");
         search_product.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -881,20 +901,22 @@ public class UI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_search_productActionPerformed
 
-    static BufferedImage addImage = null, deleteImage = null, extractImage = null, insertImage = null, reportImage = null, logoImage = null ;
-
-    public void getImages(){
-        try {
-            addImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/agregar.png")));
-            deleteImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/deleteIcon.png")));
-            reportImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/report.png")));
-            insertImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/ingreso1.png")));
-            extractImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/extraer.png")));
-            logoImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/logo.png")));
-        }catch ( IOException e){
-            System.out.println("No images loaded");
-        }
-    }
+//    static BufferedImage addImage = null, deleteImage = null, extractImage = null, insertImage = null, reportImage = null, logoImage = null ;
+//
+//    public void getImages(){
+//        try {
+//
+//            URL logImageUrl = new URL("./assets/logo.png");
+//            addImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/agregar.png")));
+//            deleteImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/deleteIcon.png")));
+//            reportImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/report.png")));
+//            insertImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/ingreso1.png")));
+//            extractImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/extraer.png")));
+//            logoImage = ImageIO.read(Objects.requireNonNull(UI.class.getResource("./assets/logo.png")));
+//        }catch ( IOException e){
+//            System.out.println("No images loaded");
+//        }
+//    }
 
     /**
      * @param args the command line arguments
